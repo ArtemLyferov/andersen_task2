@@ -7,38 +7,44 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TeamDAO extends AbstractDAO<Team> {
-    public static final String SQL_INSERT_TEAM = "INSERT INTO teams (name_team) VALUES (?)";
+    public static final String SQL_INSERT_TEAM = "INSERT INTO teams (team_name) VALUES (?)";
     public static final String SQL_SELECT_ALL_TEAMS = "SELECT * FROM teams";
     public static final String SQL_SELECT_TEAM_BY_ID = SQL_SELECT_ALL_TEAMS + " WHERE id = ?";
-    public static final String SQL_UPDATE_TEAM = "UPDATE teams SET name_team = ? WHERE id = ?";
+    public static final String SQL_UPDATE_TEAM = "UPDATE teams SET team_name = ? WHERE id = ?";
     public static final String SQL_DELETE_TEAM_BY_ID = "DELETE FROM teams WHERE id = ?";
 
     public TeamDAO(Connection connection) {
         super(connection);
     }
 
-
     @Override
-    public void create(Team team) {
+    public int create(Team team) {
+        int result = 0;
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(SQL_INSERT_TEAM);
-            preparedStatement.setString(1,team.getNameTeam());
-            preparedStatement.executeUpdate();
+            preparedStatement.setString(1, team.getTeamName());
+            result = preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return result;
+    }
+
+    protected static Team initTeam(ResultSet resultSet, Team team, String idColumnName) throws SQLException {
+        team.setId(resultSet.getInt(idColumnName));
+        team.setTeamName(resultSet.getString("team_name"));
+        return team;
     }
 
     @Override
     public List<Team> findAll() {
-        List<Team> teams = new ArrayList<>();
+        List<Team> teams = null;
         try {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(SQL_SELECT_ALL_TEAMS);
+            teams = new ArrayList<>();
             while (resultSet.next()) {
-                Team team = new Team();
-                team.setId(resultSet.getInt("id"));
-                team.setNameTeam(resultSet.getString("team_name"));
+                Team team = initTeam(resultSet, new Team(), "id");
                 teams.add(team);
             }
         } catch (SQLException e) {
@@ -49,14 +55,13 @@ public class TeamDAO extends AbstractDAO<Team> {
 
     @Override
     public Team findEntityById(int id) {
-        Team team = new Team();
+        Team team = null;
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(SQL_SELECT_TEAM_BY_ID);
             preparedStatement.setInt(1, id);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
-                team.setId(resultSet.getInt("id"));
-                team.setNameTeam(resultSet.getString("team_name"));
+                team = initTeam(resultSet, new Team(), "id");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -65,25 +70,29 @@ public class TeamDAO extends AbstractDAO<Team> {
     }
 
     @Override
-    public void update(Team team) {
+    public int update(Team team) {
+        int result = 0;
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE_TEAM);
-            preparedStatement.setString(1, team.getNameTeam());
+            preparedStatement.setString(1, team.getTeamName());
             preparedStatement.setInt(2, team.getId());
-            preparedStatement.executeUpdate();
+            result = preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return result;
     }
 
     @Override
-    public void delete(int id) {
+    public int delete(int id) {
+        int result = 0;
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(SQL_DELETE_TEAM_BY_ID);
             preparedStatement.setInt(1, id);
-            preparedStatement.executeUpdate();
+            result = preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return result;
     }
 }

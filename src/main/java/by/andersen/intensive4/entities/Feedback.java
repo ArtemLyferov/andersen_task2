@@ -4,13 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Feedback extends Entity {
     private String description;
-    private Date feedbackDate;
+    private LocalDate feedbackDate;
     private Employee employee;
 }

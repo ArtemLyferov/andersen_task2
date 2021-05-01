@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Team extends Entity {
-    private String nameTeam;
+    private String teamName;
 }

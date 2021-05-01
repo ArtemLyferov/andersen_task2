@@ -11,13 +11,13 @@ public abstract class AbstractDAO<T extends Entity> {
 
     protected Connection connection;
 
-    public abstract void create(T entity);
+    public abstract int create(T entity);
 
     public abstract List<T> findAll();
 
     public abstract T findEntityById(int id);
 
-    public abstract void update(T entity);
+    public abstract int update(T entity);
 
-    public abstract void delete(int id);
+    public abstract int delete(int id);
 }

@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 
 @Data
@@ -14,11 +14,11 @@ public class Employee extends Entity {
     private String surname;
     private String name;
     private String patronymic;
-    private Date DOB;
+    private LocalDate DOB;
     private String email;
     private String skype;
     private String phoneNumber;
-    private Date employmentDate;
+    private LocalDate employmentDate;
     private int experience;
     private DeveloperLevel developerLevel;
     private EnglishLevel englishLevel;
@@ -31,5 +31,4 @@ public class Employee extends Entity {
     public enum EnglishLevel {
         A1, A2, B1, B2, C1, C2;
     }
-
 }
