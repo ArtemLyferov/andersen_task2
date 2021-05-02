@@ -1,7 +1,6 @@
 package by.andersen.intensive4.jdbc.dao;
 
 import by.andersen.intensive4.entities.Employee;
-import by.andersen.intensive4.entities.Feedback;
 import by.andersen.intensive4.entities.Project;
 import by.andersen.intensive4.entities.Team;
 import by.andersen.intensive4.jdbc.connector.ConnectionPool;
@@ -17,22 +16,51 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class ProjectDAOTest {
-    public static ProjectDAO projectDAO;
-    public static EmployeeDAO employeeDAO;
     public static TeamDAO teamDAO;
+    public static EmployeeDAO employeeDAO;
+    public static ProjectDAO projectDAO;
+    public static Team lastTeamInList;
+    public static Employee lastEmployeeInList;
+    public static Project lastProjectInList;
+    public static int countAdd;
 
     @BeforeClass
     public static void initDAO() throws SQLException {
         ConnectionPool connectionPool = ConnectionPool.create(
                 "jdbc:postgresql://localhost:5432/employee_control_system_db",
                 "postgres", "postgres");
-        projectDAO = new ProjectDAO(connectionPool.getConnection());
-        employeeDAO = new EmployeeDAO(connectionPool.getConnection());
         teamDAO = new TeamDAO(connectionPool.getConnection());
+        employeeDAO = new EmployeeDAO(connectionPool.getConnection());
+        projectDAO = new ProjectDAO(connectionPool.getConnection());
+
+        Team team = new Team("Test team");
+        teamDAO.create(team);
+        List<Team> teams = teamDAO.findAll();
+        lastTeamInList = teams.get(teams.size() - 1);
+
+        Employee employee = new Employee("Petrov", "Anton", "Semenovich",
+                LocalDate.of(1990, 3, 12), "petrov@gmail.com", "live:petrov",
+                "+375291112233", LocalDate.of(2018, 3, 2), 4,
+                Employee.DeveloperLevel.J3, Employee.EnglishLevel.A2, lastTeamInList);
+        employeeDAO.create(employee);
+        List<Employee> employees = employeeDAO.findAll();
+        lastEmployeeInList = employees.get(employees.size() - 1);
+
+        Project project = new Project("Test project 1", "Test customer", 200,
+                Project.Methodology.AGILE_MODEL, lastEmployeeInList, lastTeamInList);
+        projectDAO.create(project);
+        List<Project> projects = projectDAO.findAll();
+        lastProjectInList = projects.get(projects.size() - 1);
     }
 
     @AfterClass
     public static void clearDAO() {
+        projectDAO.delete(lastProjectInList.getId());
+        employeeDAO.delete(lastEmployeeInList.getId());
+        teamDAO.delete(lastTeamInList.getId());
+        lastProjectInList = null;
+        lastEmployeeInList = null;
+        lastTeamInList = null;
         projectDAO = null;
         employeeDAO = null;
         teamDAO = null;
@@ -40,27 +68,13 @@ public class ProjectDAOTest {
 
     @Test
     public void createProjectTest() {
-        Team team = new Team("Test team");
-        teamDAO.create(team);
-        List<Team> teams = teamDAO.findAll();
-        team = teams.get(teams.size() - 1);
-        Employee employee = new Employee("Petrov", "Anton", "Semenovich",
-                LocalDate.of(1990, 3, 12), "petrov@gmail.com", "live:petrov",
-                "+375291112233", LocalDate.of(2018, 3, 2), 4,
-                Employee.DeveloperLevel.J3, Employee.EnglishLevel.A2, team);
-        employeeDAO.create(employee);
-        List<Employee> employees = employeeDAO.findAll();
-        employee = employees.get(employees.size() - 1);
-        Project project = new Project("Test project", "Test customer", 200,
-                Project.Methodology.AGILE_MODEL, employee, team);
+        Project project = new Project("Test project 2", "Test customer", 200,
+                Project.Methodology.AGILE_MODEL, lastEmployeeInList, lastTeamInList);
         int expected = 1;
         int actual = projectDAO.create(project);
+        countAdd++;
         assertEquals(expected, actual);
-        List<Project> projects = projectDAO.findAll();
-        project = projects.get(projects.size() - 1);
-        projectDAO.delete(project.getId());
-        employeeDAO.delete(employee.getId());
-        teamDAO.delete(team.getId());
+        projectDAO.delete(lastProjectInList.getId() + countAdd);
     }
 
     @Test
@@ -70,79 +84,27 @@ public class ProjectDAOTest {
 
     @Test
     public void getProjectByIdTest() {
-        Team team = new Team("Test team");
-        teamDAO.create(team);
-        List<Team> teams = teamDAO.findAll();
-        team = teams.get(teams.size() - 1);
-        Employee employee = new Employee("Petrov", "Anton", "Semenovich",
-                LocalDate.of(1990, 3, 12), "petrov@gmail.com", "live:petrov",
-                "+375291112233", LocalDate.of(2018, 3, 2), 4,
-                Employee.DeveloperLevel.J3, Employee.EnglishLevel.A2, team);
-        employeeDAO.create(employee);
-        List<Employee> employees = employeeDAO.findAll();
-        employee = employees.get(employees.size() - 1);
-        Project project = new Project("Test project", "Test customer", 200,
-                Project.Methodology.AGILE_MODEL, employee, team);
-        projectDAO.create(project);
-        List<Project> projects = projectDAO.findAll();
-        Project expected = projects.get(projects.size() - 1);
+        Project expected = lastProjectInList;
         Project actual = projectDAO.findEntityById(expected.getId());
         assertEquals(expected, actual);
-        projectDAO.delete(expected.getId());
-        employeeDAO.delete(employee.getId());
-        teamDAO.delete(team.getId());
     }
 
     @Test
     public void updateProjectTest() {
-        Team team = new Team("Test team");
-        teamDAO.create(team);
-        List<Team> teams = teamDAO.findAll();
-        team = teams.get(teams.size() - 1);
-        Employee employee = new Employee("Petrov", "Anton", "Semenovich",
-                LocalDate.of(1990, 3, 12), "petrov@gmail.com", "live:petrov",
-                "+375291112233", LocalDate.of(2018, 3, 2), 4,
-                Employee.DeveloperLevel.J3, Employee.EnglishLevel.A2, team);
-        employeeDAO.create(employee);
-        List<Employee> employees = employeeDAO.findAll();
-        employee = employees.get(employees.size() - 1);
-        Project project = new Project("Test project", "Test customer", 200,
-                Project.Methodology.AGILE_MODEL, employee, team);
-        projectDAO.create(project);
-        List<Project> projects = projectDAO.findAll();
-        project = projects.get(projects.size() - 1);
-        project.setNameProject("Test project 2");
+        lastProjectInList.setNameProject("Test project 3");
         int expected = 1;
-        int actual = projectDAO.update(project);
+        int actual = projectDAO.update(lastProjectInList);
         assertEquals(expected, actual);
-        projectDAO.delete(project.getId());
-        employeeDAO.delete(employee.getId());
-        teamDAO.delete(team.getId());
     }
 
     @Test
     public void deleteFeedbackTest() {
-        Team team = new Team("Test team");
-        teamDAO.create(team);
-        List<Team> teams = teamDAO.findAll();
-        team = teams.get(teams.size() - 1);
-        Employee employee = new Employee("Petrov", "Anton", "Semenovich",
-                LocalDate.of(1990, 3, 12), "petrov@gmail.com", "live:petrov",
-                "+375291112233", LocalDate.of(2018, 3, 2), 4,
-                Employee.DeveloperLevel.J3, Employee.EnglishLevel.A2, team);
-        employeeDAO.create(employee);
-        List<Employee> employees = employeeDAO.findAll();
-        employee = employees.get(employees.size() - 1);
-        Project project = new Project("Test project", "Test customer", 200,
-                Project.Methodology.AGILE_MODEL, employee, team);
+        Project project = new Project("Test project 4", "Test customer", 200,
+                Project.Methodology.AGILE_MODEL, lastEmployeeInList, lastTeamInList);
         projectDAO.create(project);
-        List<Project> projects = projectDAO.findAll();
-        project = projects.get(projects.size() - 1);
-        project = projects.get(projects.size() - 1);
+        countAdd++;
         int expected = 1;
-        int actual = projectDAO.delete(project.getId());
+        int actual = projectDAO.delete(lastProjectInList.getId() + countAdd);
         assertEquals(expected, actual);
-        employeeDAO.delete(employee.getId());
-        teamDAO.delete(team.getId());
     }
 }

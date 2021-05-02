@@ -12,68 +12,64 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 public class TeamDAOTest {
-    public static TeamDAO dao;
+    public static TeamDAO teamDAO;
+    public static Team lastTeamInList;
+    public static int countAdd;
 
     @BeforeClass
     public static void initDAO() throws SQLException {
         ConnectionPool connectionPool = ConnectionPool.create(
                 "jdbc:postgresql://localhost:5432/employee_control_system_db",
                 "postgres", "postgres");
-        dao = new TeamDAO(connectionPool.getConnection());
+        teamDAO = new TeamDAO(connectionPool.getConnection());
+        Team team = new Team("Test team 1");
+        teamDAO.create(team);
+        List<Team> teams = teamDAO.findAll();
+        lastTeamInList = teams.get(teams.size() - 1);
     }
 
     @AfterClass
     public static void clearDAO() {
-        dao = null;
+        teamDAO.delete(lastTeamInList.getId());
+        lastTeamInList = null;
+        teamDAO = null;
     }
 
     @Test
     public void createTeamTest() {
-        Team team = new Team("Test team");
         int expected = 1;
-        int actual = dao.create(team);
+        int actual = teamDAO.create(new Team("Team test 2"));
+        countAdd++;
         assertEquals(expected, actual);
-        List<Team> teams = dao.findAll();
-        dao.delete(teams.size() - 1);
+        teamDAO.delete(lastTeamInList.getId() + countAdd);
     }
 
     @Test
     public void findAllTeamsTest() {
-        assertNotNull(dao.findAll());
+        assertNotNull(teamDAO.findAll());
     }
 
     @Test
     public void getTeamByIdTest() {
-        Team team = new Team("Test team");
-        dao.create(team);
-        List<Team> teams = dao.findAll();
-        Team expected = teams.get(teams.size() - 1);
-        Team actual = dao.findEntityById(expected.getId());
+        Team expected = lastTeamInList;
+        Team actual = teamDAO.findEntityById(expected.getId());
         assertEquals(expected, actual);
-        dao.delete(actual.getId());
     }
 
     @Test
     public void updateTeamTest() {
-        Team team = new Team("Test team");
-        dao.create(team);
-        List<Team> teams = dao.findAll();
-        team = teams.get(teams.size() - 1);
-        team.setTeamName("Test team 2");
+        lastTeamInList.setTeamName("Test team 3");
         int expected = 1;
-        int actual = dao.update(team);
+        int actual = teamDAO.update(lastTeamInList);
         assertEquals(expected, actual);
-        dao.delete(team.getId());
     }
 
     @Test
     public void deleteTeamTest() {
-        Team team = new Team("Test team");
-        dao.create(team);
-        List<Team> teams = dao.findAll();
-        team = teams.get(teams.size() - 1);
+        teamDAO.create(new Team("Test tem 4"));
+        countAdd++;
         int expected = 1;
-        int actual = dao.delete(team.getId());
+        int actual = teamDAO.delete(lastTeamInList.getId() + countAdd);
         assertEquals(expected, actual);
     }
 }

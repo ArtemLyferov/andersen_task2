@@ -16,22 +16,51 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class FeedbackDAOTest {
-    public static FeedbackDAO feedbackDAO;
-    public static EmployeeDAO employeeDAO;
     public static TeamDAO teamDAO;
+    public static EmployeeDAO employeeDAO;
+    public static FeedbackDAO feedbackDAO;
+    public static Team lastTeamInList;
+    public static Employee lastEmployeeInList;
+    public static Feedback lastFeedbackInList;
+    public static int countAdd;
 
     @BeforeClass
     public static void initDAO() throws SQLException {
         ConnectionPool connectionPool = ConnectionPool.create(
                 "jdbc:postgresql://localhost:5432/employee_control_system_db",
                 "postgres", "postgres");
-        feedbackDAO = new FeedbackDAO(connectionPool.getConnection());
-        employeeDAO = new EmployeeDAO(connectionPool.getConnection());
         teamDAO = new TeamDAO(connectionPool.getConnection());
+        employeeDAO = new EmployeeDAO(connectionPool.getConnection());
+        feedbackDAO = new FeedbackDAO(connectionPool.getConnection());
+
+        Team team = new Team("Test team");
+        teamDAO.create(team);
+        List<Team> teams = teamDAO.findAll();
+        lastTeamInList = teams.get(teams.size() - 1);
+
+        Employee employee = new Employee("Petrov", "Anton", "Semenovich",
+                LocalDate.of(1990, 3, 12), "petrov@gmail.com", "live:petrov",
+                "+375291112233", LocalDate.of(2018, 3, 2), 4,
+                Employee.DeveloperLevel.J3, Employee.EnglishLevel.A2, lastTeamInList);
+        employeeDAO.create(employee);
+        List<Employee> employees = employeeDAO.findAll();
+        lastEmployeeInList = employees.get(employees.size() - 1);
+
+        Feedback feedback = new Feedback("Test feedback 1", LocalDate.of(2020, 4, 15),
+                lastEmployeeInList);
+        feedbackDAO.create(feedback);
+        List<Feedback> feedbacks = feedbackDAO.findAll();
+        lastFeedbackInList = feedbacks.get(feedbacks.size() - 1);
     }
 
     @AfterClass
     public static void clearDAO() {
+        feedbackDAO.delete(lastFeedbackInList.getId());
+        employeeDAO.delete(lastEmployeeInList.getId());
+        teamDAO.delete(lastTeamInList.getId());
+        lastFeedbackInList = null;
+        lastEmployeeInList = null;
+        lastTeamInList = null;
         feedbackDAO = null;
         employeeDAO = null;
         teamDAO = null;
@@ -39,27 +68,13 @@ public class FeedbackDAOTest {
 
     @Test
     public void createFeedbackTest() {
-        Team team = new Team("Test team");
-        teamDAO.create(team);
-        List<Team> teams = teamDAO.findAll();
-        team = teams.get(teams.size() - 1);
-        Employee employee = new Employee("Petrov", "Anton", "Semenovich",
-                LocalDate.of(1990, 3, 12), "petrov@gmail.com", "live:petrov",
-                "+375291112233", LocalDate.of(2018, 3, 2), 4,
-                Employee.DeveloperLevel.J3, Employee.EnglishLevel.A2, team);
-        employeeDAO.create(employee);
-        List<Employee> employees = employeeDAO.findAll();
-        employee = employees.get(employees.size() - 1);
-        Feedback feedback = new Feedback("Test feedback", LocalDate.of(2020, 4, 15),
-                employee);
+        Feedback feedback = new Feedback("Test feedback 2", LocalDate.of(2020, 4, 15),
+                lastEmployeeInList);
         int expected = 1;
         int actual = feedbackDAO.create(feedback);
+        countAdd++;
         assertEquals(expected, actual);
-        List<Feedback> feedbacks = feedbackDAO.findAll();
-        feedback = feedbacks.get(feedbacks.size() - 1);
-        feedbackDAO.delete(feedback.getId());
-        employeeDAO.delete(employee.getId());
-        teamDAO.delete(team.getId());
+        feedbackDAO.delete(lastFeedbackInList.getId() + countAdd);
     }
 
     @Test
@@ -69,78 +84,27 @@ public class FeedbackDAOTest {
 
     @Test
     public void getFeedbackByIdTest() {
-        Team team = new Team("Test team");
-        teamDAO.create(team);
-        List<Team> teams = teamDAO.findAll();
-        team = teams.get(teams.size() - 1);
-        Employee employee = new Employee("Petrov", "Anton", "Semenovich",
-                LocalDate.of(1990, 3, 12), "petrov@gmail.com", "live:petrov",
-                "+375291112233", LocalDate.of(2018, 3, 2), 4,
-                Employee.DeveloperLevel.J3, Employee.EnglishLevel.A2, team);
-        employeeDAO.create(employee);
-        List<Employee> employees = employeeDAO.findAll();
-        employee = employees.get(employees.size() - 1);
-        Feedback feedback = new Feedback("Test feedback", LocalDate.of(2020, 4, 15),
-                employee);
-        feedbackDAO.create(feedback);
-        List<Feedback> feedbacks = feedbackDAO.findAll();
-        Feedback expected = feedbacks.get(feedbacks.size() - 1);
+        Feedback expected = lastFeedbackInList;
         Feedback actual = feedbackDAO.findEntityById(expected.getId());
         assertEquals(expected, actual);
-        feedbackDAO.delete(expected.getId());
-        employeeDAO.delete(employee.getId());
-        teamDAO.delete(team.getId());
     }
 
     @Test
     public void updateFeedbackTest() {
-        Team team = new Team("Test team");
-        teamDAO.create(team);
-        List<Team> teams = teamDAO.findAll();
-        team = teams.get(teams.size() - 1);
-        Employee employee = new Employee("Petrov", "Anton", "Semenovich",
-                LocalDate.of(1990, 3, 12), "petrov@gmail.com", "live:petrov",
-                "+375291112233", LocalDate.of(2018, 3, 2), 4,
-                Employee.DeveloperLevel.J3, Employee.EnglishLevel.A2, team);
-        employeeDAO.create(employee);
-        List<Employee> employees = employeeDAO.findAll();
-        employee = employees.get(employees.size() - 1);
-        Feedback feedback = new Feedback("Test feedback", LocalDate.of(2020, 4, 15),
-                employee);
-        feedbackDAO.create(feedback);
-        List<Feedback> feedbacks = feedbackDAO.findAll();
-        feedback = feedbacks.get(feedbacks.size() - 1);
-        feedback.setDescription("Test feedback 2");
+        lastFeedbackInList.setDescription("Test feedback 3");
         int expected = 1;
-        int actual = feedbackDAO.update(feedback);
+        int actual = feedbackDAO.update(lastFeedbackInList);
         assertEquals(expected, actual);
-        feedbackDAO.delete(feedback.getId());
-        employeeDAO.delete(employee.getId());
-        teamDAO.delete(team.getId());
     }
 
     @Test
     public void deleteFeedbackTest() {
-        Team team = new Team("Test team");
-        teamDAO.create(team);
-        List<Team> teams = teamDAO.findAll();
-        team = teams.get(teams.size() - 1);
-        Employee employee = new Employee("Petrov", "Anton", "Semenovich",
-                LocalDate.of(1990, 3, 12), "petrov@gmail.com", "live:petrov",
-                "+375291112233", LocalDate.of(2018, 3, 2), 4,
-                Employee.DeveloperLevel.J3, Employee.EnglishLevel.A2, team);
-        employeeDAO.create(employee);
-        List<Employee> employees = employeeDAO.findAll();
-        employee = employees.get(employees.size() - 1);
-        Feedback feedback = new Feedback("Test feedback", LocalDate.of(2020, 4, 15),
-                employee);
+        Feedback feedback = new Feedback("Test feedback 4", LocalDate.of(2020, 4, 15),
+                lastEmployeeInList);
         feedbackDAO.create(feedback);
-        List<Feedback> feedbacks = feedbackDAO.findAll();
-        feedback = feedbacks.get(feedbacks.size() - 1);
+        countAdd++;
         int expected = 1;
-        int actual = feedbackDAO.delete(feedback.getId());
+        int actual = feedbackDAO.delete(lastFeedbackInList.getId() + countAdd);
         assertEquals(expected, actual);
-        employeeDAO.delete(employee.getId());
-        teamDAO.delete(team.getId());
     }
 }
