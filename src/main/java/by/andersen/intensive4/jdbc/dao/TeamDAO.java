@@ -2,11 +2,14 @@ package by.andersen.intensive4.jdbc.dao;
 
 import by.andersen.intensive4.entities.Team;
 import by.andersen.intensive4.jdbc.connector.ConnectorDB;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class TeamDAO extends EntityDAO<Team> {
     public static final String SQL_INSERT_TEAM = "INSERT INTO teams (team_name) VALUES (?)";
     public static final String SQL_SELECT_ALL_TEAMS = "SELECT * FROM teams";
@@ -14,6 +17,7 @@ public class TeamDAO extends EntityDAO<Team> {
     public static final String SQL_UPDATE_TEAM = "UPDATE teams SET team_name = ? WHERE id = ?";
     public static final String SQL_DELETE_TEAM_BY_ID = "DELETE FROM teams WHERE id = ?";
 
+    @Autowired
     public TeamDAO(ConnectorDB connectorDB) {
         super(connectorDB);
     }

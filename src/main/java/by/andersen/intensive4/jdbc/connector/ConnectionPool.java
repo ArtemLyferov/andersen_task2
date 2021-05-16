@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ConnectionPool {
+
     @Getter
     private final String url;
     @Getter

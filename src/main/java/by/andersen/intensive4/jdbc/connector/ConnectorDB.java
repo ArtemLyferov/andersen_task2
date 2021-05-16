@@ -1,9 +1,12 @@
 package by.andersen.intensive4.jdbc.connector;
 
+import org.springframework.stereotype.Component;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ResourceBundle;
 
+@Component
 public class ConnectorDB {
     private static ConnectorDB connectorDB;
     private ConnectionPool connectionPool;

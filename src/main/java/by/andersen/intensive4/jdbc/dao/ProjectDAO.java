@@ -4,11 +4,14 @@ import by.andersen.intensive4.entities.Employee;
 import by.andersen.intensive4.entities.Project;
 import by.andersen.intensive4.entities.Team;
 import by.andersen.intensive4.jdbc.connector.ConnectorDB;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class ProjectDAO extends EntityDAO<Project> {
 
     public static final String SQL_INSERT_PROJECT = "INSERT INTO projects (name_project, customer, duration, methodology, " +
@@ -25,6 +28,7 @@ public class ProjectDAO extends EntityDAO<Project> {
             "methodology = ?, project_manager_id = ?, team_id = ? WHERE id = ?";
     public static final String SQL_DELETE_PROJECT_BY_ID = "DELETE FROM projects WHERE id = ?";
 
+    @Autowired
     public ProjectDAO(ConnectorDB connectorDB) {
         super(connectorDB);
     }

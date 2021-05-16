@@ -1,10 +1,11 @@
 package by.andersen.intensive4.jdbc.dao;
 
 import by.andersen.intensive4.entities.Team;
-import by.andersen.intensive4.jdbc.connector.ConnectorDB;
+import by.andersen.intensive4.jdbc.SpringConfigTest;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -13,21 +14,24 @@ import static org.junit.Assert.*;
 
 public class TeamDAOTest {
     public static TeamDAO teamDAO;
+    public static Team testTeam;
     public static Team lastTeamInList;
     public static int countAdd;
 
     @BeforeClass
     public static void initDAO() throws SQLException {
-        ConnectorDB connectorDB = ConnectorDB.getInstance();
-        teamDAO = new TeamDAO(connectorDB);
-        Team team = new Team("Test team 1");
-        teamDAO.create(team);
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+                SpringConfigTest.class);
+        teamDAO = context.getBean("teamDAO", TeamDAO.class);
+        testTeam = context.getBean("testTeam", Team.class);
+        teamDAO.create(testTeam);
         List<Team> teams = teamDAO.findAll();
         lastTeamInList = teams.get(teams.size() - 1);
     }
 
     @AfterClass
     public static void clearDAO() {
+        testTeam = null;
         teamDAO.delete(lastTeamInList.getId());
         lastTeamInList = null;
         teamDAO = null;
@@ -35,8 +39,9 @@ public class TeamDAOTest {
 
     @Test
     public void createTeamTest() {
+        testTeam.setTeamName("Team test 2");
         int expected = 1;
-        int actual = teamDAO.create(new Team("Team test 2"));
+        int actual = teamDAO.create(testTeam);
         countAdd++;
         assertEquals(expected, actual);
         teamDAO.delete(lastTeamInList.getId() + countAdd);
@@ -64,7 +69,8 @@ public class TeamDAOTest {
 
     @Test
     public void deleteTeamTest() {
-        teamDAO.create(new Team("Test tem 4"));
+        testTeam.setTeamName("Test team 4");
+        teamDAO.create(testTeam);
         countAdd++;
         int expected = 1;
         int actual = teamDAO.delete(lastTeamInList.getId() + countAdd);

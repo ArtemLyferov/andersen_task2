@@ -3,11 +3,14 @@ package by.andersen.intensive4.jdbc.dao;
 import by.andersen.intensive4.entities.Employee;
 import by.andersen.intensive4.entities.Team;
 import by.andersen.intensive4.jdbc.connector.ConnectorDB;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class EmployeeDAO extends EntityDAO<Employee> {
 
     public static final String SQL_INSERT_EMPLOYEE = "INSERT INTO employees (surname, name, patronymic, dob, email, " +
@@ -23,6 +26,7 @@ public class EmployeeDAO extends EntityDAO<Employee> {
             "english_level = ?, team_id = ? WHERE id = ?";
     public static final String SQL_DELETE_EMPLOYEE_BY_ID = "DELETE FROM employees WHERE id = ?";
 
+    @Autowired
     public EmployeeDAO(ConnectorDB connectorDB) {
         super(connectorDB);
     }
