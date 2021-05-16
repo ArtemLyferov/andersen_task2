@@ -2,7 +2,7 @@ package by.andersen.intensive4.jdbc.dao;
 
 import by.andersen.intensive4.entities.Employee;
 import by.andersen.intensive4.entities.Team;
-import by.andersen.intensive4.jdbc.connector.ConnectionPool;
+import by.andersen.intensive4.jdbc.connector.ConnectorDB;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -23,11 +23,9 @@ public class EmployeeDAOTest {
 
     @BeforeClass
     public static void initDAO() throws SQLException {
-        ConnectionPool connectionPool = ConnectionPool.create(
-                "jdbc:postgresql://localhost:5432/employee_control_system_db",
-                "postgres", "postgres");
-        teamDAO = new TeamDAO(connectionPool.getConnection());
-        employeeDAO = new EmployeeDAO(connectionPool.getConnection());
+        ConnectorDB connectorDB = ConnectorDB.getInstance();
+        teamDAO = new TeamDAO(connectorDB);
+        employeeDAO = new EmployeeDAO(connectorDB);
 
         Team team = new Team("Test team");
         teamDAO.create(team);
@@ -74,7 +72,7 @@ public class EmployeeDAOTest {
     @Test
     public void getEmployeeByIdTest() {
         Employee expected = lastEmployeeInList;
-        Employee actual = employeeDAO.findEntityById(expected.getId());
+        Employee actual = employeeDAO.findById(expected.getId());
         assertEquals(expected, actual);
     }
 

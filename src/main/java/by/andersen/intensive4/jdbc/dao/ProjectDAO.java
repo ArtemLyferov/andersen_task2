@@ -3,12 +3,13 @@ package by.andersen.intensive4.jdbc.dao;
 import by.andersen.intensive4.entities.Employee;
 import by.andersen.intensive4.entities.Project;
 import by.andersen.intensive4.entities.Team;
+import by.andersen.intensive4.jdbc.connector.ConnectorDB;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProjectDAO extends AbstractDAO<Project> {
+public class ProjectDAO extends EntityDAO<Project> {
 
     public static final String SQL_INSERT_PROJECT = "INSERT INTO projects (name_project, customer, duration, methodology, " +
             "project_manager_id, team_id) " +
@@ -18,15 +19,14 @@ public class ProjectDAO extends AbstractDAO<Project> {
             "e.phone_number, e.employment_date, e.experience, e.developer_level, e.english_level, e.team_id, " +
             "t.team_name, p.team_id, t.team_name FROM projects AS p " +
             "JOIN employees AS e ON p.project_manager_id = e.id " +
-            "JOIN teams AS t ON e.team_id = t.id " +
-            "JOIN teams ON p.team_id = t.id";
+            "JOIN teams AS t ON p.team_id = t.id";
     public static final String SQL_SELECT_PROJECT_BY_ID = SQL_SELECT_ALL_PROJECTS + " WHERE p.id = ?";
     public static final String SQL_UPDATE_PROJECT = "UPDATE projects SET name_project = ?, customer = ?, duration = ?, " +
             "methodology = ?, project_manager_id = ?, team_id = ? WHERE id = ?";
     public static final String SQL_DELETE_PROJECT_BY_ID = "DELETE FROM projects WHERE id = ?";
 
-    public ProjectDAO(Connection connection) {
-        super(connection);
+    public ProjectDAO(ConnectorDB connectorDB) {
+        super(connectorDB);
     }
 
     private static PreparedStatement setProjectToPreparedStatement(PreparedStatement preparedStatement,
@@ -43,11 +43,15 @@ public class ProjectDAO extends AbstractDAO<Project> {
     @Override
     public int create(Project project) {
         int result = 0;
+        Connection connection = null;
         try {
+            connection = getConnectorDB().getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(SQL_INSERT_PROJECT);
             result = setProjectToPreparedStatement(preparedStatement, project).executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            getConnectorDB().releaseConnection(connection);
         }
         return result;
     }
@@ -66,7 +70,9 @@ public class ProjectDAO extends AbstractDAO<Project> {
     @Override
     public List<Project> findAll() {
         List<Project> projects = null;
+        Connection connection = null;
         try {
+            connection = getConnectorDB().getConnection();
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(SQL_SELECT_ALL_PROJECTS);
             projects = new ArrayList<>();
@@ -75,14 +81,18 @@ public class ProjectDAO extends AbstractDAO<Project> {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            getConnectorDB().releaseConnection(connection);
         }
         return projects;
     }
 
     @Override
-    public Project findEntityById(int id) {
+    public Project findById(int id) {
         Project project = null;
+        Connection connection = null;
         try {
+            connection = getConnectorDB().getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(SQL_SELECT_PROJECT_BY_ID);
             preparedStatement.setInt(1, id);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -91,6 +101,8 @@ public class ProjectDAO extends AbstractDAO<Project> {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            getConnectorDB().releaseConnection(connection);
         }
         return project;
     }
@@ -98,13 +110,17 @@ public class ProjectDAO extends AbstractDAO<Project> {
     @Override
     public int update(Project project) {
         int result = 0;
+        Connection connection = null;
         try {
+            connection = getConnectorDB().getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE_PROJECT);
             preparedStatement = setProjectToPreparedStatement(preparedStatement, project);
             preparedStatement.setInt(7, project.getId());
             result = preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            getConnectorDB().releaseConnection(connection);
         }
         return result;
     }
@@ -112,12 +128,16 @@ public class ProjectDAO extends AbstractDAO<Project> {
     @Override
     public int delete(int id) {
         int result = 0;
+        Connection connection = null;
         try {
+            connection = getConnectorDB().getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(SQL_DELETE_PROJECT_BY_ID);
             preparedStatement.setInt(1, id);
             result = preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            getConnectorDB().releaseConnection(connection);
         }
         return result;
     }

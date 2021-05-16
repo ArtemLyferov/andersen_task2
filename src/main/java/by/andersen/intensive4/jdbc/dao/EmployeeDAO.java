@@ -2,12 +2,13 @@ package by.andersen.intensive4.jdbc.dao;
 
 import by.andersen.intensive4.entities.Employee;
 import by.andersen.intensive4.entities.Team;
+import by.andersen.intensive4.jdbc.connector.ConnectorDB;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EmployeeDAO extends AbstractDAO<Employee> {
+public class EmployeeDAO extends EntityDAO<Employee> {
 
     public static final String SQL_INSERT_EMPLOYEE = "INSERT INTO employees (surname, name, patronymic, dob, email, " +
             "skype, phone_number, employment_date, experience, developer_level, english_level, team_id) " +
@@ -22,8 +23,8 @@ public class EmployeeDAO extends AbstractDAO<Employee> {
             "english_level = ?, team_id = ? WHERE id = ?";
     public static final String SQL_DELETE_EMPLOYEE_BY_ID = "DELETE FROM employees WHERE id = ?";
 
-    public EmployeeDAO(Connection connection) {
-        super(connection);
+    public EmployeeDAO(ConnectorDB connectorDB) {
+        super(connectorDB);
     }
 
     private static PreparedStatement setEmployeeToPreparedStatement(PreparedStatement preparedStatement,
@@ -46,11 +47,15 @@ public class EmployeeDAO extends AbstractDAO<Employee> {
     @Override
     public int create(Employee employee) {
         int result = 0;
+        Connection connection = null;
         try {
+            connection = getConnectorDB().getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(SQL_INSERT_EMPLOYEE);
             result = setEmployeeToPreparedStatement(preparedStatement, employee).executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            getConnectorDB().releaseConnection(connection);
         }
         return result;
     }
@@ -75,7 +80,9 @@ public class EmployeeDAO extends AbstractDAO<Employee> {
     @Override
     public List<Employee> findAll() {
         List<Employee> employees = null;
+        Connection connection = null;
         try {
+            connection = getConnectorDB().getConnection();
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(SQL_SELECT_ALL_EMPLOYEES);
             employees = new ArrayList<>();
@@ -84,14 +91,18 @@ public class EmployeeDAO extends AbstractDAO<Employee> {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            getConnectorDB().releaseConnection(connection);
         }
         return employees;
     }
 
     @Override
-    public Employee findEntityById(int id) {
+    public Employee findById(int id) {
         Employee employee = null;
+        Connection connection = null;
         try {
+            connection = getConnectorDB().getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(SQL_SELECT_EMPLOYEE_BY_ID);
             preparedStatement.setInt(1, id);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -100,6 +111,8 @@ public class EmployeeDAO extends AbstractDAO<Employee> {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            getConnectorDB().releaseConnection(connection);
         }
         return employee;
     }
@@ -107,13 +120,17 @@ public class EmployeeDAO extends AbstractDAO<Employee> {
     @Override
     public int update(Employee employee) {
         int result = 0;
+        Connection connection = null;
         try {
+            connection = getConnectorDB().getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE_EMPLOYEE);
             preparedStatement = setEmployeeToPreparedStatement(preparedStatement, employee);
             preparedStatement.setInt(13, employee.getId());
             result = preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            getConnectorDB().releaseConnection(connection);
         }
         return result;
     }
@@ -121,12 +138,16 @@ public class EmployeeDAO extends AbstractDAO<Employee> {
     @Override
     public int delete(int id) {
         int result = 0;
+        Connection connection = null;
         try {
+            connection = getConnectorDB().getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(SQL_DELETE_EMPLOYEE_BY_ID);
             preparedStatement.setInt(1, id);
             result = preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            getConnectorDB().releaseConnection(connection);
         }
         return result;
     }

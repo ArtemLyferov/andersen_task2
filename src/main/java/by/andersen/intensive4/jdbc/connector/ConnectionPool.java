@@ -1,7 +1,6 @@
 package by.andersen.intensive4.jdbc.connector;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
