@@ -3,13 +3,12 @@ package by.andersen.intensive4.jdbc.dao;
 import by.andersen.intensive4.entities.Employee;
 import by.andersen.intensive4.entities.Feedback;
 import by.andersen.intensive4.entities.Team;
-import by.andersen.intensive4.jdbc.connector.ConnectorDB;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -21,38 +20,39 @@ public class FeedbackDAOTest {
     public static FeedbackDAO feedbackDAO;
     public static Team lastTeamInList;
     public static Employee lastEmployeeInList;
+    public static Feedback testFeedback;
     public static Feedback lastFeedbackInList;
     public static int countAdd;
 
     @BeforeClass
     public static void initDAO() throws SQLException {
-        ConnectorDB connectorDB = ConnectorDB.getInstance();
-        teamDAO = new TeamDAO(connectorDB);
-        employeeDAO = new EmployeeDAO(connectorDB);
-        feedbackDAO = new FeedbackDAO(connectorDB);
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
+                "applicationContext.xml");
+        teamDAO = context.getBean("teamDAO", TeamDAO.class);
+        employeeDAO = context.getBean("employeeDAO", EmployeeDAO.class);
+        feedbackDAO = context.getBean("feedbackDAO", FeedbackDAO.class);
 
-        Team team = new Team("Test team");
-        teamDAO.create(team);
+        Team testTeam = context.getBean("testTeam", Team.class);
+        teamDAO.create(testTeam);
         List<Team> teams = teamDAO.findAll();
         lastTeamInList = teams.get(teams.size() - 1);
 
-        Employee employee = new Employee("Petrov", "Anton", "Semenovich",
-                LocalDate.of(1990, 3, 12), "petrov@gmail.com", "live:petrov",
-                "+375291112233", LocalDate.of(2018, 3, 2), 4,
-                Employee.DeveloperLevel.J3, Employee.EnglishLevel.A2, lastTeamInList);
-        employeeDAO.create(employee);
+        Employee testEmployee = context.getBean("testEmployee", Employee.class);
+        testEmployee.setTeam(lastTeamInList);
+        employeeDAO.create(testEmployee);
         List<Employee> employees = employeeDAO.findAll();
         lastEmployeeInList = employees.get(employees.size() - 1);
 
-        Feedback feedback = new Feedback("Test feedback 1", LocalDate.of(2020, 4, 15),
-                lastEmployeeInList);
-        feedbackDAO.create(feedback);
+        testFeedback = context.getBean("testFeedback", Feedback.class);
+        testFeedback.setEmployee(lastEmployeeInList);
+        feedbackDAO.create(testFeedback);
         List<Feedback> feedbacks = feedbackDAO.findAll();
         lastFeedbackInList = feedbacks.get(feedbacks.size() - 1);
     }
 
     @AfterClass
     public static void clearDAO() {
+        testFeedback = null;
         feedbackDAO.delete(lastFeedbackInList.getId());
         employeeDAO.delete(lastEmployeeInList.getId());
         teamDAO.delete(lastTeamInList.getId());
@@ -66,10 +66,9 @@ public class FeedbackDAOTest {
 
     @Test
     public void createFeedbackTest() {
-        Feedback feedback = new Feedback("Test feedback 2", LocalDate.of(2020, 4, 15),
-                lastEmployeeInList);
+        testFeedback.setDescription("Test feedback 2");
         int expected = 1;
-        int actual = feedbackDAO.create(feedback);
+        int actual = feedbackDAO.create(testFeedback);
         countAdd++;
         assertEquals(expected, actual);
         feedbackDAO.delete(lastFeedbackInList.getId() + countAdd);
@@ -97,9 +96,8 @@ public class FeedbackDAOTest {
 
     @Test
     public void deleteFeedbackTest() {
-        Feedback feedback = new Feedback("Test feedback 4", LocalDate.of(2020, 4, 15),
-                lastEmployeeInList);
-        feedbackDAO.create(feedback);
+        testFeedback.setDescription("Test feedback 4");
+        feedbackDAO.create(testFeedback);
         countAdd++;
         int expected = 1;
         int actual = feedbackDAO.delete(lastFeedbackInList.getId() + countAdd);
