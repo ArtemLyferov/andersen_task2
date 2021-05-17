@@ -27,10 +27,10 @@ public class ProjectDAOTest {
     @BeforeClass
     public static void initDAO() throws SQLException {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-                "applicationContext.xml");
-        teamDAO = context.getBean("teamDAO", TeamDAO.class);
-        employeeDAO = context.getBean("employeeDAO", EmployeeDAO.class);
-        projectDAO = context.getBean("projectDAO", ProjectDAO.class);
+                "applicationContextTest.xml");
+        teamDAO = context.getBean("testTeamDAO", TeamDAO.class);
+        employeeDAO = context.getBean("testEmployeeDAO", EmployeeDAO.class);
+        projectDAO = context.getBean("testProjectDAO", ProjectDAO.class);
 
         Team testTeam = context.getBean("testTeam", Team.class);
         teamDAO.create(testTeam);

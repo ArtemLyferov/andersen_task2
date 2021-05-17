@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans  xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder location="classpath:database.properties"/>
+
+    <bean id="testConnectionPool"
+          class="by.andersen.intensive4.jdbc.connector.ConnectionPool"
+          factory-method="create">
+        <constructor-arg name="url" value="${db.url}"/>
+        <constructor-arg name="user" value="${db.user}"/>
+        <constructor-arg name="password" value="${db.password}"/>
+    </bean>
+
+
+    <bean id="testConnectorDB"
+          class="by.andersen.intensive4.jdbc.connector.ConnectorDB"
+          factory-method="getInstance">
+    </bean>
+
+
+    <bean id="testTeamDAO"
+          class="by.andersen.intensive4.jdbc.dao.TeamDAO">
+        <constructor-arg ref="testConnectorDB"/>
+    </bean>
+
+    <bean id="testTeam"
+          class="by.andersen.intensive4.entities.Team">
+        <constructor-arg value="Test team 1"/>
+    </bean>
+
+
+    <bean id="testEmployeeDAO"
+          class="by.andersen.intensive4.jdbc.dao.EmployeeDAO">
+        <constructor-arg ref="testConnectorDB"/>
+    </bean>
+
+    <bean id="testDOB"
+          class="java.time.LocalDate">
+        <constructor-arg name="year" value="1990"/>
+        <constructor-arg name="month" value="3"/>
+        <constructor-arg name="dayOfMonth" value="12"/>
+    </bean>
+
+    <bean id="testEmploymentDate"
+          class="java.time.LocalDate">
+        <constructor-arg name="year" value="2018"/>
+        <constructor-arg name="month" value="3"/>
+        <constructor-arg name="dayOfMonth" value="2"/>
+    </bean>
+
+    <bean id="testDeveloperLevel"
+          class="by.andersen.intensive4.entities.Employee.DeveloperLevel"
+          factory-method="valueOf">
+        <constructor-arg value="J3"/>
+    </bean>
+
+    <bean id="testEnglishLevel"
+          class="by.andersen.intensive4.entities.Employee.EnglishLevel"
+          factory-method="valueOf">
+        <constructor-arg value="A2"/>
+    </bean>
+
+    <bean id="testEmployee"
+          class="by.andersen.intensive4.entities.Employee">
+        <constructor-arg name="surname" value="Petrov"/>
+        <constructor-arg name="name" value="Anton"/>
+        <constructor-arg name="patronymic" value="Semenovich"/>
+        <constructor-arg name="DOB" ref="testDOB"/>
+        <constructor-arg name="email" value="petrov@gmail.com"/>
+        <constructor-arg name="skype" value="live:petrov"/>
+        <constructor-arg name="phoneNumber" value="+375291112233"/>
+        <constructor-arg name="employmentDate" ref="testEmploymentDate"/>
+        <constructor-arg name="experience" value="4"/>
+        <constructor-arg name="developerLevel" ref="testDeveloperLevel"/>
+        <constructor-arg name="englishLevel" ref="testEnglishLevel"/>
+        <constructor-arg name="team" ref="testTeam"/>
+    </bean>
+
+
+    <bean id="testFeedbackDAO"
+          class="by.andersen.intensive4.jdbc.dao.FeedbackDAO">
+        <constructor-arg ref="testConnectorDB"/>
+    </bean>
+
+    <bean id="testFeedbackDate"
+          class="java.time.LocalDate">
+        <constructor-arg name="year" value="2020"/>
+        <constructor-arg name="month" value="4"/>
+        <constructor-arg name="dayOfMonth" value="15"/>
+    </bean>
+
+    <bean id="testFeedback"
+          class="by.andersen.intensive4.entities.Feedback">
+        <constructor-arg name="description" value="Test feedback 1"/>
+        <constructor-arg name="feedbackDate" ref="testFeedbackDate"/>
+        <constructor-arg name="employee" ref="testEmployee"/>
+    </bean>
+
+
+    <bean id="testProjectDAO"
+          class="by.andersen.intensive4.jdbc.dao.ProjectDAO">
+        <constructor-arg ref="testConnectorDB"/>
+    </bean>
+
+    <bean id="testMethodology"
+          class="by.andersen.intensive4.entities.Project.Methodology"
+          factory-method="valueOf">
+        <constructor-arg value="AGILE_MODEL"/>
+    </bean>
+
+    <bean id="testProject"
+          class="by.andersen.intensive4.entities.Project">
+        <constructor-arg name="nameProject" value="Test project 1"/>
+        <constructor-arg name="customer" value="Test customer"/>
+        <constructor-arg name="duration" value="200"/>
+        <constructor-arg name="methodology" ref="testMethodology"/>
+        <constructor-arg name="projectManager" ref="testEmployee"/>
+        <constructor-arg name="team" ref="testTeam"/>
+    </bean>
+
+</beans>

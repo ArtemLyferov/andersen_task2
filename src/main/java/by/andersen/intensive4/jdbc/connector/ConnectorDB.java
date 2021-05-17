@@ -33,7 +33,7 @@ public class ConnectorDB {
         return connectionPool.getConnection();
     }
 
-    public boolean releaseConnection(Connection connection) {
-        return connectionPool.releaseConnection(connection);
+    public void releaseConnection(Connection connection) {
+        connectionPool.releaseConnection(connection);
     }
 }
